@@ -1,4 +1,9 @@
 import fetch from 'node-fetch';
+import {getDifferenceInDays, getCurrentDate} from './helper'
+import {addImageToDiv, appendTrip, clearDiv} from './UIBuilder'
+
+var tripList = [];
+var tripResult;
 
 // Make sure get form after DOM load completely
 
@@ -10,64 +15,96 @@ document.addEventListener('DOMContentLoaded', function () {
     const dateInput = document.getElementById('date');
     const today = new Date().toISOString().split('T')[0];
     dateInput.setAttribute('min', today);
+
+    // save trip button
+    const btnSaveTrip = document.getElementById('btn-save');
+    btnSaveTrip.addEventListener('click', saveTripClick);
 })
 
 async function handleSubmit(event) {
     event.preventDefault();
-    alert('Submit success')
-
     // get input
     const location = document.getElementById('location').value;
-    const date = document.getElementById('date').value;
+    const departureDate = document.getElementById('date').value;
     const resultDiv = document.getElementById('result');
-    console.log(location)
-    console.log(date)
-    console.log(resultDiv)
-
-    const geonamesUsername = 'your_geonames_username';
-    const weatherbitApiKey = 'your_weatherbit_api_key';
-    const pixabayApiKey = 'your_pixabay_api_key';
+    
+    const tripContainer = document.getElementById('trip-container');
+    // display result of trip
+    tripContainer.classList.remove('hide');
 
     resultDiv.innerHTML = 'Loading...';
+
+    // check input date is in 7 days from now
+    const currentDate = getCurrentDate();
+    // const oneWeekFromNow = new Date();
+    // oneWeekFromNow.setDate(currentDate.getDate() + 7);
+    // get diff date of departure from now
+    console.log(currentDate)
+    console.log(departureDate)
+
+    var days = getDifferenceInDays(currentDate,departureDate) +1;//plus 1 for today
+    console.log(days)
+
     // Call API to my server
     try {
-        const geonamesResponse = await fetch(`http://api.geonames.org/searchJSON?q=${location}&maxRows=1&username=${geonamesUsername}`);
-        const geonamesData = await geonamesResponse.json();
-        
-        if (geonamesData.geonames.length === 0) {
-          resultDiv.innerHTML = 'Location not found.';
+        tripResult = await fetch(`/api/trip?cityName=${location}&days=${days}`);
+
+        const tripData = await tripResult.json();
+        const {max_temp, min_temp, description, photoUrl, errorMsg} = tripData;
+        if (errorMsg !== undefined) {
+          // display error message
+          resultDiv.innerHTML = errorMsg;
           return;
+        } else if (max_temp === undefined){
+          // display image
+          addImageToDiv('photo', photoUrl);
         }
-    
-        const { lat, lng } = geonamesData.geonames[0];
-        const departureDate = new Date(date);
-        const currentDate = new Date();
-        const oneWeekFromNow = new Date();
-        oneWeekFromNow.setDate(currentDate.getDate() + 7);
-        // Display response result
-        if (departureDate <= oneWeekFromNow) {
-          const weatherResponse = await fetch(`/api/weather?lat=${lat}&lng=${lng}&apiKey=${weatherbitApiKey}`);
-          const weatherData = await weatherResponse.json();
-          const weather = weatherData.data[0];
-          const weatherInfo = `Weather: ${weather.weather.description}, Temperature: ${weather.temp}°C`;
-    
-          const pixabayResponse = await fetch(`/api/image?location=${location}&apiKey=${pixabayApiKey}`);
-          const pixabayData = await pixabayResponse.json();
-          const imageUrl = pixabayData.hits[0].webformatURL;
-    
-          resultDiv.innerHTML = `<p>${weatherInfo}</p><img src="${imageUrl}" alt="${location}">`;
-        } else {
-          const pixabayResponse = await fetch(`/api/image?location=${location}&apiKey=${pixabayApiKey}`);
-          const pixabayData = await pixabayResponse.json();
-          const imageUrl = pixabayData.hits[0].webformatURL;
-    
-          resultDiv.innerHTML = `<img src="${imageUrl}" alt="${location}">`;
+        else {
+          // Display button save trip
+          const btnSaveTrip = document.getElementById('btn-save');
+          btnSaveTrip.classList.remove('hide');
+
+          // return res.status(200).json({
+          //   max_temp:max_temp,
+          //   min_temp:min_temp,
+          //   description:description
+          // })
+          // display result on screen
+          var displayText = '';
+          displayText += '<h3>'+ location +'</h3>'
+          displayText += 'Max temp:' + max_temp + '<br>';
+          displayText += 'Min temp:' + min_temp + '<br>';
+          displayText += 'Description:' + description;
+          resultDiv.innerHTML = displayText;
+          // display image
+          addImageToDiv('photo', photoUrl);
         }
+        
       } catch (error) {
         resultDiv.innerHTML = 'Error occurred while fetching data.';
         console.error(error);
       }
-    
+}
+
+function saveTripClick(event){
+  event.preventDefault();
+  tripList.push(tripResult);
+  console.log(tripResult)
+  console.log(tripList)
+  //Display saved trips
+  displaySavedTrips()
+  // hide button save trip
+  const btnSaveTrip = document.getElementById('btn-save');
+  btnSaveTrip.classList.add('hide');
+}
+
+const displaySavedTrips = () =>{
+  clearDiv('saved-trips');
+  tripList.forEach(element => {
+    appendTrip('saved-trips',element.location,element.max_temp,element.min_temp,element.description,element.photoUrl);
+  });
+
+  
 }
 
 export { handleSubmit };

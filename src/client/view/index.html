@@ -8,14 +8,21 @@
 <body>
   <div id="app">
     <h1>Travel App</h1>
-    <form id="travel-form">
-      <label for="location">Location:</label>
+    <form id="travel-form">t
+      <label for="location">Locaion:</label>
       <input type="text" id="location" name="location" required>
       <label for="date">Departure Date:</label>
       <input type="date" id="date" name="date" required>
-      <button type="submit">Submit</button>
+      <button class="btn" type="submit">Submit</button>
     </form>
+  </div>
+  <div id="trip-container" class="trip hide">
     <div id="result"></div>
+    <div id="photo"></div>
+    <div class="btn hide" id="btn-save">Save trip</div>
+  </div>
+  <div id="saved-trips">
+    
   </div>
 </body>
 </html>

@@ -4,6 +4,7 @@ import { handleSubmit } from './js/formHandler'
 // sass files
 import './styles/base.scss'
 import './styles/form.scss'
+import './styles/trip.scss'
 
 export {
     handleSubmit
