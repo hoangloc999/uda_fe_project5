@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+const WorkboxPlugin = require('workbox-webpack-plugin');
 
 module.exports = {
   mode: 'production',
@@ -8,13 +9,13 @@ module.exports = {
   output: {
     filename: 'main.[contenthash].js',
     path: path.resolve(__dirname, 'dist'),
-    clean: true,
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: './src/client/view/index.html',
       filename: "./index.html"
     }),
+    new WorkboxPlugin.GenerateSW(),
   ],
   module: {
     rules: [
@@ -33,4 +34,8 @@ module.exports = {
     minimize: true,
     minimizer: [new TerserPlugin()],
   },
+  devServer: {
+      port: 3000,
+      allowedHosts: 'all'
+  }
 };

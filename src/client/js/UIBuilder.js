@@ -13,30 +13,39 @@ function addImageToDiv(divId, imgUrl) {
     // Set the src attribute of the img element to the provided URL
     imgElement.src = imgUrl;
 
-    // Optionally, you can set other attributes such as alt text, width, height, etc.
-    // imgElement.alt = 'Description of the image';
-    // imgElement.width = 200; // for example, set width to 200px
-    // imgElement.height = 200; // for example, set height to 200px
-
     // Append the img element to the target div element
     divElement.appendChild(imgElement);
 }
 
-function appendTrip(containerId, tripName, maxTemp, minTemp, description, imageUrl) {
+function appendTrip(containerId, tripName, maxTemp, minTemp, description, imageUrl, dateInput) {
     // Select the container div
     let container = document.getElementById(containerId);
 
     // Create HTML structure for the trip
-    let tripHtml = `
+    let tripHtml = '';
+
+    if(maxTemp === undefined){
+      tripHtml = `
       <div class="trip">
         <h3>${tripName}</h3>
+        <div>Date: ${dateInput}</div>
+        <img src="${imageUrl}">
+      </div>
+    `;
+    } else {
+      tripHtml = `
+      <div class="trip">
+        <h3>${tripName}</h3>
+        <div>Date: ${dateInput}</div>
         <div>Max temp: ${maxTemp}</div>
         <div>Min temp: ${minTemp}</div>
         <div>Description: ${description}</div>
         <img src="${imageUrl}">
       </div>
     `;
-
+    }
+    
+    console.log(tripHtml)
     // Append tripHtml to the container div
     container.innerHTML += tripHtml;
 }
